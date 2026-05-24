@@ -1,0 +1,6 @@
+{
+  "name": "Zetoon is back",
+  "description": "A minimalist, high-end photography portfolio focused on architectural and silent imagery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -8,33 +8,41 @@ export function PhotoDetail() {
   const { photoId } = useParams();
   const navigate = useNavigate();
   
-  const allPhotos = PROJECTS.flatMap(p => p.photos);
-  const photoIndex = allPhotos.findIndex(p => p.id === photoId);
-  const photo = allPhotos[photoIndex];
+  // First, find the photo globally to get its project ID
+  const globalPhotos = PROJECTS.flatMap(p => p.photos);
+  const photo = globalPhotos.find(p => p.id === photoId);
 
   if (!photo) return <div>Photo not found</div>;
 
   const project = PROJECTS.find(p => p.id === photo.projectId);
+  // Get all photos for the current project only
+  const allPhotos = project ? project.photos : [];
+  const photoIndex = allPhotos.findIndex(p => p.id === photoId);
+
+  const hasNext = photoIndex < allPhotos.length - 1;
+  const hasPrev = photoIndex > 0;
 
   const goToNext = () => {
-    const nextIndex = (photoIndex + 1) % allPhotos.length;
-    navigate(`/photo/${allPhotos[nextIndex].id}`);
+    if (hasNext) {
+      navigate(`/photo/${allPhotos[photoIndex + 1].id}`);
+    }
   };
 
   const goToPrev = () => {
-    const prevIndex = (photoIndex - 1 + allPhotos.length) % allPhotos.length;
-    navigate(`/photo/${allPhotos[prevIndex].id}`);
+    if (hasPrev) {
+      navigate(`/photo/${allPhotos[photoIndex - 1].id}`);
+    }
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") goToNext();
-      if (e.key === "ArrowLeft") goToPrev();
+      if (e.key === "ArrowRight" && hasNext) goToNext();
+      if (e.key === "ArrowLeft" && hasPrev) goToPrev();
       if (e.key === "Escape") navigate(`/${photo.projectId}`);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [photoIndex, allPhotos, navigate, photo.projectId]);
+  }, [photoIndex, allPhotos, navigate, photo.projectId, hasNext, hasPrev]);
 
   // Handle right-click prevention
   const handleContextMenu = (e: MouseEvent) => {
@@ -56,12 +64,14 @@ export function PhotoDetail() {
 
       {/* Main content */}
       <main className="flex-grow flex items-center justify-between px- mobile-margin md:px-desktop-margin relative group">
-        <button 
-          onClick={goToPrev}
-          className="absolute left-mobile-margin md:left-desktop-margin z-10 opacity-0 group-hover:opacity-100 transition-opacity p-4 hover:bg-surface-dim/10"
-        >
-          <ChevronLeft size={32} />
-        </button>
+        {hasPrev && (
+          <button 
+            onClick={goToPrev}
+            className="absolute left-mobile-margin md:left-desktop-margin z-10 opacity-0 group-hover:opacity-100 transition-opacity p-4 hover:bg-surface-dim/10"
+          >
+            <ChevronLeft size={32} />
+          </button>
+        )}
 
         <div className="w-full flex items-center justify-center py-6 px-12 md:px-24">
           <AnimatePresence mode="wait">
@@ -80,12 +90,14 @@ export function PhotoDetail() {
           </AnimatePresence>
         </div>
 
-        <button 
-          onClick={goToNext}
-          className="absolute right-mobile-margin md:right-desktop-margin z-10 opacity-0 group-hover:opacity-100 transition-opacity p-4 hover:bg-surface-dim/10"
-        >
-          <ChevronRight size={32} />
-        </button>
+        {hasNext && (
+          <button 
+            onClick={goToNext}
+            className="absolute right-mobile-margin md:right-desktop-margin z-10 opacity-0 group-hover:opacity-100 transition-opacity p-4 hover:bg-surface-dim/10"
+          >
+            <ChevronRight size={32} />
+          </button>
+        )}
       </main>
 
       {/* Footer Info */}
